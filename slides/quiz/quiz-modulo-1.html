@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EDquiz · Módulo 1 · Claude</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#141413; --win:#262624; --card:#30302E; --deep:#1F1E1D; --line:#3D3D3A; --line2:#4A4945;
+  --txt:#FAF9F5; --txt2:#C2C0B6; --muted:#9C9A92; --dim:#8F8D85;
+  --terra:#D97757; --blue:#6A9BCC; --olive:#8FA36B; --sand:#D4A27F; --red:#E07A6B;
+  --accent:#D97757;
+  --sans:"Nunito",-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"Cascadia Code",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:var(--sans);overflow:hidden}
+/* lienzo fijo 16:9 que se escala a la ventana (ideal para grabar) */
+.viewport{position:fixed;inset:0;overflow:hidden}
+.stage{position:absolute;left:50%;top:50%;width:1760px;height:990px;transform-origin:center;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center}
+.win{width:1688px;height:918px;background:var(--win);border:2px solid var(--line);border-radius:22px;display:flex;flex-direction:column;overflow:hidden}
+.bar{height:68px;display:flex;align-items:center;padding:0 34px;border-bottom:1px solid var(--line);gap:12px;position:relative}
+.dot{width:18px;height:18px;border-radius:50%}.r{background:#ff5f57}.y{background:#febc2e}.g{background:#28c840}
+.crumb{margin-left:26px;color:var(--muted);font-size:20px}
+.tabs{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:6px;padding:4px;border:1px solid var(--line);background:var(--deep);border-radius:12px}
+.tab{padding:4px 22px;border-radius:9px;color:var(--muted);font-size:20px}
+.tab.on{color:var(--terra);border:1.5px solid var(--terra);background:var(--card)}
+.who{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:20px}.who i{width:12px;height:12px;border-radius:50%;background:var(--terra)}
+.body{flex:1;padding:44px 80px 30px;display:flex;flex-direction:column;min-height:0}
+.eyebrow{font-family:var(--mono);color:var(--accent);font-size:22px;letter-spacing:.04em;display:flex;align-items:center;gap:12px}
+.eyebrow .spark{color:var(--terra);font-size:26px}
+.hidden{display:none!important}
+/* inicio / fin */
+.center{align-items:center;justify-content:center;text-align:center}
+.big{font-size:84px;font-weight:600;margin:18px 0 8px;line-height:1.05}
+.big em{font-style:normal;color:var(--accent)}
+.sub{color:var(--txt2);font-size:28px;margin:0 0 36px}
+.meta{display:flex;gap:14px;justify-content:center;margin-bottom:40px}
+.chip{border:1.5px solid var(--line2);border-radius:10px;padding:8px 18px;font-size:20px;color:var(--txt2)}
+.chip.a{border-color:var(--accent);color:var(--accent)}.chip.t{border-color:var(--terra);color:var(--terra)}
+.chip.o{border-color:var(--olive);color:var(--olive)}.chip.s{border-color:var(--sand);color:var(--sand)}
+.btn{font-family:var(--sans);font-size:24px;font-weight:600;cursor:pointer;padding:14px 34px;border-radius:12px;border:none;background:var(--terra);color:var(--deep)}
+.btn.ghost{background:transparent;border:1.5px solid var(--accent);color:var(--accent)}
+.btn:focus-visible{outline:3px solid var(--sand);outline-offset:3px}
+.keys{margin-top:26px;color:var(--dim);font-size:18px;font-family:var(--mono)}
+kbd{border:1px solid var(--line2);border-bottom-width:3px;border-radius:6px;padding:1px 8px;margin:0 2px;color:var(--txt2);background:var(--deep)}
+/* pregunta */
+.top{display:flex;align-items:center;justify-content:space-between}
+.pg{display:flex;gap:12px}
+.pg i{width:16px;height:16px;border-radius:50%;border:2px solid var(--dim)}
+.pg i.done{background:var(--olive);border-color:var(--olive)}
+.pg i.cur{background:var(--accent);border-color:var(--accent);transform:scale(1.3)}
+.qnum{font-family:var(--mono);color:var(--sand);font-size:22px;margin-top:26px}
+.q{font-size:46px;font-weight:600;line-height:1.25;margin:10px 0 30px;min-height:116px}
+.opts{display:flex;flex-direction:column;gap:16px}
+.opt{display:flex;align-items:center;gap:20px;padding:20px 26px;border:1.5px solid var(--line2);border-radius:14px;background:var(--deep);font-size:28px;color:var(--txt2);transition:.3s}
+.opt .let{font-family:var(--mono);font-weight:700;color:var(--accent);width:34px}
+.opt .ck{margin-left:auto;font-size:30px;opacity:0;transition:.3s;color:var(--olive)}
+.opt.correct{border-color:var(--olive);background:rgba(143,163,107,.14);color:var(--txt)}
+.opt.correct .let{color:var(--olive)}.opt.correct .ck{opacity:1}
+.opt.wrong{opacity:.35}
+.why{margin-top:20px;border-left:5px solid var(--olive);background:var(--card);border-radius:0 12px 12px 0;padding:14px 22px;font-size:22px;color:var(--txt2);opacity:0;transform:translateY(8px);transition:.35s}
+.why.show{opacity:1;transform:none}
+.why b{color:var(--olive)}
+.foot{margin-top:auto;display:flex;align-items:center;gap:26px;padding-top:20px}
+.timer{display:flex;align-items:center;gap:16px;flex:1}
+.tnum{font-family:var(--mono);font-size:32px;color:var(--sand);width:60px}
+.track{flex:1;height:10px;background:var(--deep);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.fill{height:100%;width:100%;background:var(--sand);border-radius:99px}
+.timer.up .tnum{color:var(--red)}.timer.up .fill{background:var(--red)}
+.timer.done .tnum{color:var(--olive)}.timer.done .fill{background:var(--olive)}
+.hint{color:var(--dim);font-size:18px;font-family:var(--mono)}
+/* final */
+.badges{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:6px 0 34px}
+.sign{color:var(--muted);font-size:22px;margin-bottom:28px;font-family:var(--mono)}.sign b{color:var(--terra)}
+.blink{color:var(--terra);animation:blink 1.1s steps(1) infinite}@keyframes blink{50%{opacity:0}}
+.fade{animation:fade .5s ease both}@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.copy{height:56px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 36px;font-family:var(--mono);color:var(--muted);font-size:18px}
+.copy b{color:var(--terra);font-family:var(--sans);font-weight:600;font-size:20px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="viewport"><div class="stage" id="stage"><div class="win">
+  <div class="bar">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span class="crumb">edteam / productividad-con-claude / módulo-1 / edquiz</span>
+    <div class="tabs"><span class="tab on">✻ Claude</span><span class="tab">Code</span></div>
+    <span class="who"><i></i>Claude</span>
+  </div>
+
+  <!-- INICIO -->
+  <section id="start" class="body center">
+    <div class="eyebrow"><span class="spark">✻</span>EDQUIZ · MÓDULO 1</div>
+    <div class="big">Repaso del <em>módulo 1</em></div>
+    <p class="sub">Método, Excel, formatos y documentos desde tu plantilla.</p>
+    <div class="meta"><span class="chip a">6 preguntas</span><span class="chip s">10 segundos cada una</span><span class="chip o">con explicación</span></div>
+    <div><button class="btn" id="btnStart">Empezar ▸</button></div>
+    <div class="keys"><kbd>Espacio</kbd> avanzar · <kbd>←</kbd> anterior · <kbd>R</kbd> reiniciar</div>
+  </section>
+
+  <!-- PREGUNTA -->
+  <section id="game" class="body hidden">
+    <div class="top">
+      <div class="eyebrow"><span class="spark">✻</span>EDQUIZ · MÓDULO 1</div>
+      <div class="pg" id="elPg"></div>
+    </div>
+    <div class="qnum" id="elQnum"></div>
+    <div class="q" id="elQ"></div>
+    <div class="opts" id="elOpts"></div>
+    <div class="why" id="elWhy"></div>
+    <div class="foot">
+      <div class="timer" id="elTimer"><div class="tnum" id="elTnum">10</div><div class="track"><div class="fill" id="elFill"></div></div></div>
+      <span class="hint" id="elHint"></span>
+      <button class="btn" id="elBtn"></button>
+    </div>
+  </section>
+
+  <!-- FINAL -->
+  <section id="end" class="body center hidden">
+    <div class="fade">
+      <div class="eyebrow" style="justify-content:center"><span class="spark">✻</span>MÓDULO 1 COMPLETADO</div>
+      <div class="big">Ya no lo haces <em>a mano</em> ✓</div>
+      <p class="sub">Método, Excel limpio, presentaciones y documentos desde tu plantilla.</p>
+      <div class="badges"><span class="chip t">Planificar</span><span class="chip a">Ejecutar</span><span class="chip o">Revisar</span><span class="chip s">Iterar</span></div>
+      <p class="sub" style="font-size:24px;margin-bottom:30px">Siguiente → <b style="color:var(--blue)">Módulo 2: deja de repetir con Skills</b></p>
+      <button class="btn ghost" id="btnAgain">Repetir quiz ↺</button>
+    </div>
+  </section>
+
+  <div class="copy"><span>[ edteam ] · Productividad en la empresa con Claude · 2026</span><b>William Barra</b></div>
+</div></div></div>
+
+<script>
+// EDquiz — HTML + CSS + JavaScript puro, sin librerías. Modo presentador: tú controlas el ritmo.
+const QUESTIONS = [
+  {
+    "q": "¿Qué es un prompt?",
+    "a": [
+      "Un tipo de archivo de Excel",
+      "El mensaje que le escribes a Claude",
+      "Un botón de la barra lateral"
+    ],
+    "correct": 1,
+    "why": "Todo lo que le escribes a Claude es un prompt. Cuanto más claro, mejor el resultado."
+  },
+  {
+    "q": "¿Qué es Cowork?",
+    "a": [
+      "El modo en que Claude hace tareas por ti con tus archivos",
+      "Una aplicación aparte que hay que instalar",
+      "Un conector para leer tu correo"
+    ],
+    "correct": 0,
+    "why": "Cowork trabaja con tus archivos, carpetas y conectores. Desde 2026 vive en la misma pestaña que el chat."
+  },
+  {
+    "q": "Para que Claude trabaje con los archivos de tu carpeta local, ¿qué necesitas?",
+    "a": [
+      "Enviarlos por correo",
+      "Subirlos a un conector",
+      "Darle acceso a la carpeta y dejar la app abierta"
+    ],
+    "correct": 2,
+    "why": "Cowork trabaja en la nube, pero llega a tu carpeta a través de la app de escritorio."
+  },
+  {
+    "q": "¿Por qué conviene trabajar sobre una copia del archivo?",
+    "a": [
+      "Para no perder el original si algo sale mal",
+      "Porque Claude no puede abrir originales",
+      "Porque así es más rápido"
+    ],
+    "correct": 0,
+    "why": "La copia es tu red de seguridad: si el resultado no te gusta, el original sigue intacto."
+  },
+  {
+    "q": "Vas a generar 24 contratos desde una plantilla. ¿Qué haces primero?",
+    "a": [
+      "Generar los 24 y revisar después",
+      "Copiar y pegar el primero a mano",
+      "Generar uno, revisarlo y luego todos"
+    ],
+    "correct": 2,
+    "why": "Un error en la regla se repetiría 24 veces. Primero uno, se revisa, y después todos."
+  },
+  {
+    "q": "¿Cuál es el orden del método?",
+    "a": [
+      "Ejecutar → revisar → planificar → iterar",
+      "Planificar → ejecutar → revisar → iterar",
+      "Iterar → ejecutar → planificar → revisar"
+    ],
+    "correct": 1,
+    "why": "Primero el plan, después la ejecución. Revisar e iterar cierran el ciclo."
+  }
+];
+const SECS = 10, LETTERS = ["A", "B", "C", "D"];
+const $ = (id) => document.getElementById(id);
+
+// Escala el lienzo 16:9 a la ventana sin deformarlo.
+function fit() {
+  const s = Math.min(innerWidth / 1760, innerHeight / 990);
+  $("stage").style.transform = `translate(-50%, -50%) scale(${s})`;
+}
+addEventListener("resize", fit); fit();
+
+const QUIZ = {
+  i: 0, phase: "start", raf: null,
+
+  show(which) {
+    ["start", "game", "end"].forEach((s) => $(s).classList.toggle("hidden", s !== which));
+    if (which !== "game") this.phase = which;
+  },
+  start() { this.i = 0; this.show("game"); this.render(); },
+
+  render() {
+    cancelAnimationFrame(this.raf);
+    const Q = QUESTIONS[this.i];
+    $("elQnum").textContent = `Pregunta ${this.i + 1} de ${QUESTIONS.length}`;
+    $("elQ").textContent = Q.q;
+    $("elPg").replaceChildren(...QUESTIONS.map((_, k) => {
+      const dot = document.createElement("i");
+      if (k < this.i) dot.className = "done"; else if (k === this.i) dot.className = "cur";
+      return dot;
+    }));
+    // textContent (no innerHTML): así textos como <nombre> o {{campo}} se muestran tal cual.
+    $("elOpts").replaceChildren(...Q.a.map((t, k) => {
+      const o = document.createElement("div"); o.className = "opt"; o.dataset.k = k;
+      const l = document.createElement("span"); l.className = "let"; l.textContent = LETTERS[k] + ")";
+      const s = document.createElement("span"); s.textContent = t;
+      const c = document.createElement("span"); c.className = "ck"; c.textContent = "✓";
+      o.append(l, s, c); return o;
+    }));
+    const why = $("elWhy"); why.classList.remove("show"); why.replaceChildren();
+    $("elTimer").classList.remove("up", "done");
+    $("elTnum").textContent = SECS; $("elFill").style.width = "100%";
+    this.phase = "ready";
+    this.setAction("Empezar ▸", "Lee la pregunta y pulsa Empezar (10 s)");
+  },
+
+  setAction(label, hint, ghost) {
+    $("elBtn").textContent = label; $("elHint").textContent = hint;
+    $("elBtn").className = ghost ? "btn ghost" : "btn";
+  },
+
+  // Temporizador preciso con requestAnimationFrame + timestamp.
+  startTimer() {
+    this.phase = "running";
+    this.setAction("Revelar respuesta", "Revela cuando quieras (o espera los 10 s)");
+    const dur = SECS * 1000, t0 = performance.now();
+    const tick = (now) => {
+      if (this.phase !== "running") return;
+      const remain = Math.max(dur - (now - t0), 0);
+      $("elTnum").textContent = Math.ceil(remain / 1000);
+      $("elFill").style.width = (remain / dur * 100) + "%";
+      if (remain > 0) this.raf = requestAnimationFrame(tick);
+      else { this.phase = "timeup"; $("elTimer").classList.add("up"); this.setAction("Revelar respuesta", "¡Tiempo!"); }
+    };
+    this.raf = requestAnimationFrame(tick);
+  },
+
+  reveal() {
+    cancelAnimationFrame(this.raf);
+    this.phase = "revealed";
+    const Q = QUESTIONS[this.i];
+    $("elTimer").classList.remove("up"); $("elTimer").classList.add("done");
+    $("elTnum").textContent = "✓"; $("elFill").style.width = "100%";
+    document.querySelectorAll("#elOpts .opt").forEach((el) =>
+      el.classList.add(+el.dataset.k === Q.correct ? "correct" : "wrong"));
+    const b = document.createElement("b"); b.textContent = "Por qué: ";
+    $("elWhy").replaceChildren(b, document.createTextNode(Q.why));
+    $("elWhy").classList.add("show");
+    const last = this.i === QUESTIONS.length - 1;
+    this.setAction(last ? "Ver cierre ▸" : "Siguiente ▸", "Espacio para continuar", true);
+  },
+
+  next() {
+    if (this.i < QUESTIONS.length - 1) { this.i++; this.render(); }
+    else { cancelAnimationFrame(this.raf); this.show("end"); }
+  },
+  prev() { if (this.i > 0) { this.i--; this.render(); } },
+
+  // Espacio / Enter / clic: empezar → revelar → siguiente.
+  action() {
+    if (this.phase === "start" || this.phase === "end") return this.start();
+    if (this.phase === "ready") return this.startTimer();
+    if (this.phase === "revealed") return this.next();
+    this.reveal();
+  },
+};
+
+$("btnStart").addEventListener("click", () => QUIZ.start());
+$("elBtn").addEventListener("click", () => QUIZ.action());
+$("btnAgain").addEventListener("click", () => QUIZ.start());
+document.addEventListener("keydown", (e) => {
+  if (e.repeat) return;                              // evita saltar fases al mantener la tecla
+  if (e.code === "Space" || e.code === "Enter") { e.preventDefault(); QUIZ.action(); }
+  const inGame = !$("game").classList.contains("hidden");
+  if (e.code === "ArrowRight" && inGame) QUIZ.action();
+  else if (e.code === "ArrowLeft" && inGame) QUIZ.prev();
+  else if (e.key === "r" || e.key === "R") { QUIZ.show("start"); }
+});
+</script>
+</body>
+</html>
