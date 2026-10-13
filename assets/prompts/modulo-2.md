@@ -2,7 +2,9 @@
 
 > Prompts para copiar, en el orden de las clases.
 > Curso: **Productividad en la empresa con Claude** · plan de referencia: **Claude Pro** · octubre 2026.
-> Archivos de práctica: descarga `practica-modulo-2.zip` (carpeta `assets/`), descomprímelo y dale acceso a Claude a la carpeta `modulo-2`.
+> Archivos de práctica: descarga `practica-modulo-2.zip` (carpeta `assets/`) y descomprímelo.
+> En este módulo trabajas en un **proyecto**: créalo y agrégale dos carpetas, `modulo-1` (la que usaste en el Módulo 1) y `modulo-2`.
+> Un proyecto puede usar varias carpetas a la vez. Cuando pidas un archivo, di en qué carpeta guardarlo.
 
 ---
 
@@ -22,6 +24,25 @@ Las ves y activas en **Personalización › Skills**.
 
 ▸ Lo que pides SIEMPRE (por ejemplo, fechas en dd/mm/aaaa) va en la configuración → **preferencias personales**.
 
+▸ Mira una Skill en acción:
+```
+Cada trimestre preparo el reporte de ventas así:
+1. Limpio el Excel de ventas: duplicados, fechas y estados.
+2. Actualizo los pagos con el Excel de Finanzas.
+3. Saco los 5 insights para gerencia.
+4. Armo la presentación en PowerPoint: una idea por diapositiva y un gráfico de torta por región.
+5. Hago el informe ejecutivo en PDF, de una página: resumen, 3 cifras clave y próximos pasos.
+6. Paso la presentación y el informe a la plantilla de la empresa.
+Ponlo en un documento de Word de una página, claro y ordenado como procedimiento.
+Guárdalo en la carpeta modulo-2 como pasos-reporte-ventas.docx.
+```
+Fíjate en el aviso **«Using docx»**: Claude usó la Skill de Word solo, sin que se lo pidieras.
+
+▸ *Opcional:* para que Claude siempre te diga qué Skill usó, agrega esto en **preferencias personales**:
+```
+Cuando uses una Skill, indica siempre cuál usaste en cada paso y en la respuesta final.
+```
+
 ---
 
 ## Clase 2 · Dashboard en Excel
@@ -35,7 +56,7 @@ Explica qué pregunta responde cada una.
 
 ▸ Ejecuta:
 ```
-Crea dashboard-ventas.xlsx con una hoja "Dashboard": las 4 métricas arriba,
+Crea dashboard-ventas.xlsx en la carpeta modulo-2 con una hoja "Dashboard": las 4 métricas arriba,
 un gráfico de ventas por región y el top 5 de clientes.
 ```
 
@@ -59,7 +80,7 @@ Si las responde, no cambies nada más.
 ▸ En la misma conversación del dashboard:
 ```
 Convierte lo que acabamos de hacer en una Skill reutilizable
-llamada dashboard-ventas.
+llamada dashboard-ventas. Que siempre guarde el dashboard en la misma carpeta del Excel que le paso.
 ```
 
 ▸ Revisa qué lleva dentro:
@@ -116,7 +137,7 @@ Revisa mis correos de esta semana y dime cuáles son importantes
 
 ▸ Construye e itera:
 ```
-Escribe un borrador de correo "Resumen semanal" con lo importante:
+Escribe un borrador de correo "Resumen semanal" dirigido a mí mismo, con lo importante:
 viñetas, máximo 10 líneas. Déjalo como borrador, no lo envíes.
 ```
 
@@ -130,6 +151,29 @@ Convierte este proceso en una Skill llamada resumen-viernes.
 Cada viernes a las 9:00, resume mis correos de la semana en un borrador.
 ```
 O desde **Programadas › Nueva tarea**: frecuencia semanal, viernes, 9:00.
+
+▸ Los contratos del Módulo 1, por correo (usa la carpeta `modulo-1` del proyecto):
+```
+Con listado-clientes.xlsx y los contratos de la carpeta modulo-1/contratos,
+prepara un correo para cada cliente: dirigido a su Contacto, a su Correo,
+con su contrato adjunto. Muéstrame cómo quedaría el de Acme S.A. antes de crear nada.
+```
+
+▸ Prueba con uno y revísalo en Gmail:
+```
+Crea solo el borrador de Acme S.A. en Gmail, con su contrato adjunto. No lo envíes.
+```
+
+▸ Conviértelo en Skill:
+```
+Convierte este proceso en una Skill llamada correos-contratos.
+Que siempre deje los correos como borrador y nunca los envíe.
+```
+
+▸ Úsala con varios clientes:
+```
+Usa la Skill correos-contratos con Nova Ltda., Delta y Grupo Sur.
+```
 
 > **Nuevo en 2026:** Gmail ya puede enviar correos, con tu aprobación en cada envío.
 > En este curso elegimos dejarlo como borrador para revisarlo antes de enviar.
